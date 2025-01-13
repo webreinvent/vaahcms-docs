@@ -1,12 +1,10 @@
 post:
-  summary: Sign in
-  description: |
-    This endpoint allows users to sign in to their account. Upon successful authentication, a new API token will be generated for the user, which can be used for subsequent authenticated requests. Click [For signup](#tag/authentication/POST/api/signup) as a cutomer in VaahStore
-  operationId: postSignIn
-  security:
-    - api_key: [ ]
   tags:
     - Authentication
+  summary: "Sign up as a customer"
+  operationId: "signUp"
+  security:
+    - api_key: [ ] 
   requestBody:
     required: true
     content:
@@ -16,33 +14,31 @@ post:
           properties:
             email:
               type: string
-              description: The email address of the user or username.
+              format: email
+              description: "The customer's email address."
+              maxLength: 150
+            first_name:
+              type: string
+              description: "The customer's first name."
+              maxLength: 150
+            username:
+              type: string
+              description: "Customer username"
             password:
               type: string
-              description: The password for the account.
-            type:
-              type: string
-              enum: [ otp ]
-              description: The type of authentication. If `otp` is provided, `login_otp` becomes required, and `password` is not required.
-            login_otp:
-              type: string
-              description: The one-time password (OTP) used for authentication.
-              example: 12345
+              description: "The customer's password."
+            is_active:
+              type: integer
+              description: "Indicates whether the customer is active or not."
           required:
             - email
+            - first_name
+            - username
             - password
-          oneOf:
-            - required: [ password ]
-              not:
-                required: [ login_otp ]
-            - required: [ login_otp ]
-              not:
-                required: [ password ]
-
 
   responses:
     '200':
-      description: User signed in successfully and API token generated.
+      description: "User/Customer signup Successfully"
       content:
         application/json:
           schema:
@@ -51,6 +47,13 @@ post:
               success:
                 type: boolean
                 example: true
+              messages:
+                type: array
+                items:
+                  type: string
+                example: [
+                    "Saved successfully"
+                ]
               data:
                 type: object
                 properties:
@@ -80,8 +83,9 @@ post:
                       api_token:
                         type: string
                         description: The API token for authenticating future requests.
+
     '400':
-      description: Bad Request, validation errors occurred.
+      description: "Validation error"
       content:
         application/json:
           schema:
@@ -94,9 +98,14 @@ post:
                 type: array
                 items:
                   type: string
-                example: ["The email field is required.", "The password field is required.", "The login OTP field is required."]
-    '401':
-      description: Unauthorized, invalid credentials provided.
+                example: [
+                    "The email field is required.",
+                    "The email must be a valid email address.",
+                    "The first name field is required.","The username field is required.", "The password field is required.",
+                    "The status field is required."
+                ]
+    '409':
+      description: "Conflict error if user/customer already exists"
       content:
         application/json:
           schema:
@@ -109,4 +118,7 @@ post:
                 type: array
                 items:
                   type: string
-                example: ["Invalid credentials provided."]
+                example: [
+                    "Email is already registered.. ",
+                    "Username is already registered.. ",
+                ]
